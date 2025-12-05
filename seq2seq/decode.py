@@ -60,9 +60,9 @@ def beam_search_decode(model: Seq2SeqModel, src_tokens: torch.Tensor, src_pad_ma
     beams = [(torch.tensor([[BOS]], device=device), 0.0, 0.0)]
     for _ in range(max_out_len):
         new_beams = []
-        for seq, score, _ in beams:
+        for seq, score, score_w in beams:
             if seq[0, -1].item() == EOS:
-                new_beams.append((seq, score))
+                new_beams.append((seq, score, score_w))
                 continue
             with torch.no_grad():
                 max_len = model.decoder.pos_embed.size(1)
@@ -87,6 +87,7 @@ def beam_search_decode(model: Seq2SeqModel, src_tokens: torch.Tensor, src_pad_ma
 
         beams = sorted(new_beams, key=lambda x: x[1], reverse=True)[:beam_size]
 
+        
         # Relative threshold pruning
         # get max score
         max_score = beams[0][1]
@@ -95,9 +96,10 @@ def beam_search_decode(model: Seq2SeqModel, src_tokens: torch.Tensor, src_pad_ma
         max_score_w = beams[0][2]
         if rpl > 0.0:
             # keep only hypotheses that have a a score higher than rp * max_score and a score_w higher than rpl * max_score_w
-            # if either rp or rpl is 0.0, the corresponding condition is always true and no rp or no rpl is applied
-            beams = [hyp for hyp in beams if (hyp[1] > rp * max_score) and (hyp[2] > rpl * max_score_w)]
-
+            beams = [hyp for hyp in beams if hyp[2] > (1/rpl) * max_score_w]
+        elif rp > 0.0:
+            beams = [hyp for hyp in beams if hyp[1] > (1/rp) * max_score]
+    
         # __QUESTION 5: Why do we check for EOS here and what does it imply for beam search?
         if all(seq[0, -1].item() == EOS for seq, _, _ in beams):
             break
