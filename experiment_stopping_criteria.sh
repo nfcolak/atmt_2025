@@ -65,7 +65,7 @@ python translate.py \
     --src-tokenizer cz-en/tokenizers/cz-bpe-8000.model \
     --tgt-tokenizer cz-en/tokenizers/en-bpe-8000.model \
     --checkpoint-path cz-en/checkpoints/checkpoint_best.pt \
-    --output cz-en/output_rp0.6_rpl0.02.txt \
+    --output cz-en/output_baseline.txt \
     --bleu \
     --reference toy_example/data/raw/test.en \
     --max-len 128 \
