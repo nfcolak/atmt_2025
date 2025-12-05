@@ -57,13 +57,10 @@ def beam_search_decode(model: Seq2SeqModel, src_tokens: torch.Tensor, src_pad_ma
 
     # __QUESTION 1: what does this line set up and why is the beam represented this way?
     # For relative local pruning, we also store the score of the last genereted word
-    if rpl > 0.0:
-        beams = [(torch.tensor([[BOS]], device=device), 0.0, 0.0)]
-    else:
-        beams = [(torch.tensor([[BOS]], device=device), 0.0)]
+    beams = [(torch.tensor([[BOS]], device=device), 0.0, 0.0)]
     for _ in range(max_out_len):
         new_beams = []
-        for seq, score in beams:
+        for seq, score, _ in beams:
             if seq[0, -1].item() == EOS:
                 new_beams.append((seq, score))
                 continue
@@ -90,23 +87,21 @@ def beam_search_decode(model: Seq2SeqModel, src_tokens: torch.Tensor, src_pad_ma
 
         beams = sorted(new_beams, key=lambda x: x[1], reverse=True)[:beam_size]
 
+        # Relative threshold pruning
+        # get max score
+        max_score = beams[0][1]
+        # Relative local threshold pruning
+        # get max score_w
+        max_score_w = beams[0][2]
         if rpl > 0.0:
-            # Relative local threshold pruning
-            # get max score_w
-            max_score_w = beams[0][2]
-            # keep only hypotheses that have a score_w higher than threshold * max_score_w
-            beams = [hyp for hyp in beams if hyp[2] > rpl * max_score_w]
-        else:
-            # Relative threshold pruning
-            # get max score
-            max_score = beams[0][1]
-            # keep only hypotheses that have a score higher than threshold * max_score
-            beams = [hyp for hyp in beams if hyp[1] > rp * max_score]
+            # keep only hypotheses that have a a score higher than rp * max_score and a score_w higher than rpl * max_score_w
+            # if either rp or rpl is 0.0, the corresponding condition is always true and no rp or no rpl is applied
+            beams = [hyp for hyp in beams if (hyp[1] > rp * max_score) and (hyp[2] > rpl * max_score_w)]
 
         # __QUESTION 5: Why do we check for EOS here and what does it imply for beam search?
-        if all(seq[0, -1].item() == EOS for seq, _ in beams):
+        if all(seq[0, -1].item() == EOS for seq, _, _ in beams):
             break
-    best_seq, _ = beams[0]
+    best_seq, _, _ = beams[0]
     # __QUESTION 6: What is returned, and why are we squeezing, converting to list and wrapping in another list here?
     return [best_seq.squeeze(0).tolist()]
 
