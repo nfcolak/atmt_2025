@@ -22,6 +22,8 @@ python translate.py \
     --tgt-tokenizer cz-en/tokenizers/en-bpe-8000.model \
     --checkpoint-path cz-en/checkpoints/checkpoint_best.pt \
     --output cz-en/output_rp0.6.txt \
+    --bleu \
+    --reference toy_example/data/raw/test.en \
     --max-len 128 \
     --beam-size 5 \
     --rp 0.6
@@ -34,6 +36,8 @@ python translate.py \
     --tgt-tokenizer cz-en/tokenizers/en-bpe-8000.model \
     --checkpoint-path cz-en/checkpoints/checkpoint_best.pt \
     --output cz-en/output_rpl0.02.txt \
+    --bleu \
+    --reference toy_example/data/raw/test.en \
     --max-len 128 \
     --beam-size 5 \
     --rpl 0.02
@@ -46,6 +50,8 @@ python translate.py \
     --tgt-tokenizer cz-en/tokenizers/en-bpe-8000.model \
     --checkpoint-path cz-en/checkpoints/checkpoint_best.pt \
     --output cz-en/output_rp0.6_rpl0.02.txt \
+    --bleu \
+    --reference toy_example/data/raw/test.en \
     --max-len 128 \
     --beam-size 5 \
     --rp 0.6 \
