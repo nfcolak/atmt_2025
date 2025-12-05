@@ -1,6 +1,6 @@
 #!/usr/bin/bash -l
 #SBATCH --partition teaching
-#SBATCH --time=8:0:0
+#SBATCH --time=1:0:0
 #SBATCH --ntasks=1
 #SBATCH --mem=16GB
 #SBATCH --cpus-per-task=1
@@ -8,7 +8,7 @@
 #SBATCH --output=stopping_criteria.out
 
 module load gpu
-module load mamba
+module load miniforge3
 source activate atmt
 export XLA_FLAGS=--xla_gpu_cuda_data_dir=$CONDA_PREFIX/pkgs/cuda-toolkit
 
@@ -42,7 +42,7 @@ python translate.py \
     --beam-size 5 \
     --rpl 0.02
 
-echo "Translation with rpl=0.6 and rpl=0.02"
+echo "Translation with rp=0.6 and rpl=0.02"
 python translate.py \
     --cuda \
     --input  toy_example/data/raw/test.cz \
@@ -56,3 +56,18 @@ python translate.py \
     --beam-size 5 \
     --rp 0.6 \
     --rpl 0.02
+
+# Baseline without pruning
+echo "Translation with rpl=0 and rp=0"
+python translate.py \
+    --cuda \
+    --input  toy_example/data/raw/test.cz \
+    --src-tokenizer cz-en/tokenizers/cz-bpe-8000.model \
+    --tgt-tokenizer cz-en/tokenizers/en-bpe-8000.model \
+    --checkpoint-path cz-en/checkpoints/checkpoint_best.pt \
+    --output cz-en/output_rp0.6_rpl0.02.txt \
+    --bleu \
+    --reference toy_example/data/raw/test.en \
+    --max-len 128 \
+    --beam-size 5 \
+
