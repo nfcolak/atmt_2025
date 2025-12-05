@@ -90,17 +90,18 @@ def beam_search_decode(model: Seq2SeqModel, src_tokens: torch.Tensor, src_pad_ma
 
         beams = sorted(new_beams, key=lambda x: x[1], reverse=True)[:beam_size]
 
-        # Relative threshold pruning
-        # get max score
-        max_score = beams[0][1]
         if rpl > 0.0:
             # Relative local threshold pruning
             # get max score_w
             max_score_w = beams[0][2]
             # keep only hypotheses that have a score_w higher than threshold * max_score_w
             beams = [hyp for hyp in beams if hyp[2] > rpl * max_score_w]
-        # keep only hypotheses that have a score higher than threshold * max_score
-        beams = [hyp for hyp in beams if hyp[1] > rp * max_score]
+        else:
+            # Relative threshold pruning
+            # get max score
+            max_score = beams[0][1]
+            # keep only hypotheses that have a score higher than threshold * max_score
+            beams = [hyp for hyp in beams if hyp[1] > rp * max_score]
 
         # __QUESTION 5: Why do we check for EOS here and what does it imply for beam search?
         if all(seq[0, -1].item() == EOS for seq, _ in beams):
