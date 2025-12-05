@@ -42,6 +42,8 @@ def get_args():
     # Beam search decoding parameters
     parser.add_argument('--beam-size', default=5, type=int, help='beam size for beam search decoding')
     parser.add_argument('--alpha', default=0.7, type=float, help='length normalization hyperparameter for beam search')
+    parser.add_argument('--rp', default=0.0, type=float, help='threshold for relative pruning in beam search (0.0 means no relative pruning)')
+    parser.add_argument('--rpl', default=0.0, type=float, help='threshold for relative local pruning in beam search (0.0 means no relative local pruning)')
     # BLEU computation arguments
     parser.add_argument('--bleu', action='store_true', help='If set, compute BLEU score after translation')
     parser.add_argument('--reference', type=str, help='Path to the reference file (one sentence per line, required if --bleu is set)')
@@ -171,7 +173,9 @@ def main(args):
                                               args=args,
                                               device=DEVICE,
                                               beam_size=args.beam_size,
-                                              alpha=args.alpha)
+                                              alpha=args.alpha,
+                                              rp=args.rp,
+                                              rpl=args.rpl)
             #----------------------------------------
 
         # Remove BOS and decode each sentence
